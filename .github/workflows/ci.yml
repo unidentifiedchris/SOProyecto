@@ -1,0 +1,32 @@
+name: Build & Time
+
+on: [push, pull_request]
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lukka/setup-cpp@v1       # MSVC + CMake + Ninja
+      - name: Configure
+        run: cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --config Release
+      - name: Run (N=10)
+        run: |
+          copy original.txt build
+          cd build
+          ./Release/flujo.exe ..\original.txt 10
+      - name: Upload exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: flujo.exe
+          path: build/Release/flujo.exe
+
+  # Opcional: compilar también en Linux para ver diferencias
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y cmake g++ libssl-dev
+      - run: cmake -S . -B build && cmake --build build -j$(nproc)
