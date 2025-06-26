@@ -43,6 +43,7 @@ SOProyecto/
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
 ./build/flujo original.txt 10   # N = 10 copies (default test size)
+./build/flujo_opt original.txt 10   # optimised, parallel version
 ```
 
 ### 3.2 Windows – Visual Studio 2022
@@ -51,6 +52,7 @@ cmake --build build --parallel
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 build\Release\flujo.exe original.txt 10
+build\Release\flujo_opt.exe original.txt 10
 ```
 
 ### 3.3 Windows – Dev‑C++ quick guide
@@ -63,6 +65,7 @@ build\Release\flujo.exe original.txt 10
 
 ```ps1
 flujo.exe original.txt 10
+flujo_opt.exe original.txt 10
 ```
 
 ---
@@ -72,11 +75,18 @@ flujo.exe original.txt 10
 Running with `N = 10` prints:
 
 ```
-Copiado   :   5 ms
-Cif+Hash  : 265 ms
-Verif     : 266 ms
-TPPA      : 53.7 ms
-TT        : 537 ms
+Copiado   :   5 ms
+Cif+Hash  : 265 ms
+Verif     : 266 ms
+TPPA      : 53.7 ms
+TT        : 537 ms
+✅ Verificación OK
+```
+
+Parallel run (`flujo_opt`, N = 10):
+```
+TPPA      : 1.9 ms
+TT        : 19 ms
 ✅ Verificación OK
 ```
 
