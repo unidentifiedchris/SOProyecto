@@ -16,9 +16,15 @@ jobs:
       - name: Build
         run: cmake --build build --config Release --parallel
 
+      - name: Build optimised
+        run: cmake --build build --config Release --target flujo_opt --parallel
+
       # 3) Ejecutar con N = 10 para obtener métricas en el log
-      - name: Run (N=10)
+      - name: Run base (N=10)
         run: build\Release\flujo.exe original.txt 10
+
+      - name: Run optimised (N=10)
+        run: build\Release\flujo_opt.exe original.txt 10
 
       # 4) Subir el ejecutable
       - name: Upload exe
@@ -26,3 +32,9 @@ jobs:
         with:
           name: flujo.exe
           path: build\Release\flujo.exe
+
+      - name: Upload optimised exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: flujo_opt.exe
+          path: build\Release\flujo_opt.exe
