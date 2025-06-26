@@ -7,33 +7,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # ① instala CMake + MSVC + Ninja
-      - uses: lukka/setup-cpp@v1.4.1   #  ← usa el tag exacto
-        with:
-          compiler: msvc              # opcional (auto), doble check
+      # 1) Configurar proyecto – generador VS 2022
+      - name: Configure (CMake)
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 ^
+                   -DCMAKE_BUILD_TYPE=Release
 
-      # ② genera y compila en Release
-      - name: Configure
-        run: cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release
+      # 2) Compilar en Release
       - name: Build
-        run: cmake --build build --config Release
+        run: cmake --build build --config Release --parallel
 
-      # ③ prueba tu ejecutable con N = 10
+      # 3) Ejecutar con N = 10 para obtener métricas en el log
       - name: Run (N=10)
-        run: build\flujo.exe original.txt 10
+        run: build\Release\flujo.exe original.txt 10
 
-      # ④ sube el .exe para descargarlo
+      # 4) Subir el ejecutable
       - name: Upload exe
         uses: actions/upload-artifact@v4
         with:
           name: flujo.exe
-          path: build\flujo.exe
-
-  # (opcional) Linux
-  linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: sudo apt-get update && sudo apt-get install -y build-essential cmake ninja-build libssl-dev
-      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-      - run: cmake --build build -j$(nproc)
+          path: build\Release\flujo.exe

@@ -1,1 +1,1 @@
-/usr/bin/g++ -g CMakeFiles/flujo.dir/src/main.cpp.o -o flujo  /usr/lib/x86_64-linux-gnu/libssl.so /usr/lib/x86_64-linux-gnu/libcrypto.so 
+/usr/bin/c++ CMakeFiles/flujo.dir/src/main.cpp.o CMakeFiles/flujo.dir/src/cifrado.cpp.o CMakeFiles/flujo.dir/src/hash.cpp.o CMakeFiles/flujo.dir/src/verificar.cpp.o -o flujo  /usr/lib/x86_64-linux-gnu/libssl.so /usr/lib/x86_64-linux-gnu/libcrypto.so 

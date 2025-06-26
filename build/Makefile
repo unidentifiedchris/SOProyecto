@@ -129,6 +129,54 @@ flujo/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/flujo.dir/build.make CMakeFiles/flujo.dir/build
 .PHONY : flujo/fast
 
+src/cifrado.o: src/cifrado.cpp.o
+.PHONY : src/cifrado.o
+
+# target to build an object file
+src/cifrado.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flujo.dir/build.make CMakeFiles/flujo.dir/src/cifrado.cpp.o
+.PHONY : src/cifrado.cpp.o
+
+src/cifrado.i: src/cifrado.cpp.i
+.PHONY : src/cifrado.i
+
+# target to preprocess a source file
+src/cifrado.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flujo.dir/build.make CMakeFiles/flujo.dir/src/cifrado.cpp.i
+.PHONY : src/cifrado.cpp.i
+
+src/cifrado.s: src/cifrado.cpp.s
+.PHONY : src/cifrado.s
+
+# target to generate assembly for a file
+src/cifrado.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flujo.dir/build.make CMakeFiles/flujo.dir/src/cifrado.cpp.s
+.PHONY : src/cifrado.cpp.s
+
+src/hash.o: src/hash.cpp.o
+.PHONY : src/hash.o
+
+# target to build an object file
+src/hash.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flujo.dir/build.make CMakeFiles/flujo.dir/src/hash.cpp.o
+.PHONY : src/hash.cpp.o
+
+src/hash.i: src/hash.cpp.i
+.PHONY : src/hash.i
+
+# target to preprocess a source file
+src/hash.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flujo.dir/build.make CMakeFiles/flujo.dir/src/hash.cpp.i
+.PHONY : src/hash.cpp.i
+
+src/hash.s: src/hash.cpp.s
+.PHONY : src/hash.s
+
+# target to generate assembly for a file
+src/hash.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flujo.dir/build.make CMakeFiles/flujo.dir/src/hash.cpp.s
+.PHONY : src/hash.cpp.s
+
 src/main.o: src/main.cpp.o
 .PHONY : src/main.o
 
@@ -153,6 +201,30 @@ src/main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/flujo.dir/build.make CMakeFiles/flujo.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
+src/verificar.o: src/verificar.cpp.o
+.PHONY : src/verificar.o
+
+# target to build an object file
+src/verificar.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flujo.dir/build.make CMakeFiles/flujo.dir/src/verificar.cpp.o
+.PHONY : src/verificar.cpp.o
+
+src/verificar.i: src/verificar.cpp.i
+.PHONY : src/verificar.i
+
+# target to preprocess a source file
+src/verificar.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flujo.dir/build.make CMakeFiles/flujo.dir/src/verificar.cpp.i
+.PHONY : src/verificar.cpp.i
+
+src/verificar.s: src/verificar.cpp.s
+.PHONY : src/verificar.s
+
+# target to generate assembly for a file
+src/verificar.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flujo.dir/build.make CMakeFiles/flujo.dir/src/verificar.cpp.s
+.PHONY : src/verificar.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -162,9 +234,18 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... flujo"
+	@echo "... src/cifrado.o"
+	@echo "... src/cifrado.i"
+	@echo "... src/cifrado.s"
+	@echo "... src/hash.o"
+	@echo "... src/hash.i"
+	@echo "... src/hash.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
+	@echo "... src/verificar.o"
+	@echo "... src/verificar.i"
+	@echo "... src/verificar.s"
 .PHONY : help
 
 
