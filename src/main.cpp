@@ -58,6 +58,7 @@ bool verificar(int N, const fs::path& original){
         tmp.close();
 
         if(!verificar_archivos(original.string(), "tmp.txt")){
+            fs::remove("tmp.txt");
             std::cerr << "Fallo en copia "<<i<<"\n";
             return false;
         }
