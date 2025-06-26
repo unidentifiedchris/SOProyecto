@@ -1,0 +1,3 @@
+/workspaces/SOProyecto/build/CMakeFiles/flujo.dir
+/workspaces/SOProyecto/build/CMakeFiles/edit_cache.dir
+/workspaces/SOProyecto/build/CMakeFiles/rebuild_cache.dir
