@@ -192,4 +192,7 @@ CMakeFiles/flujo.dir/src/main.cpp.o: /workspaces/SOProyecto/src/main.cpp \
  /usr/include/c++/13/optional \
  /usr/include/c++/13/bits/enable_special_members.h \
  /usr/include/c++/13/span /usr/include/c++/13/variant \
- /usr/include/c++/13/bits/ranges_algobase.h
+ /usr/include/c++/13/bits/ranges_algobase.h /usr/include/c++/13/fstream \
+ /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
+ /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
+ /usr/include/c++/13/bits/fstream.tcc
