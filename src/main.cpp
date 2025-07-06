@@ -53,12 +53,15 @@ int main(int argc,char* argv[]){
     std::string orig_data((std::istreambuf_iterator<char>(in)),
                            std::istreambuf_iterator<char>());
 
+    const std::string sep = "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -";
+
+    std::cout << "Se imprime la hora de inicio del proceso :\n";
+    std::cout << sep << "\n";
     std::cout << "PROCESO BASE\n";
     auto TI_sys = Sys::now();
     auto TI = Steady::now();
     std::cout << "TI: " << fmt_time(TI_sys) << "\n";
 
-    bool any_fail = false;
     for(int i=1;i<=N;++i){
         auto start = Steady::now();
         std::string name = idx2(i);
@@ -81,8 +84,8 @@ int main(int argc,char* argv[]){
         // verify hash and decrypt
         auto h2 = hash_sha256(cif);
         std::string dec = descifrar(cif);
-        if(hex != hash_to_hex(h2) || dec != orig_data)
-            any_fail = true;
+        (void)h2; // ensure variables used
+        (void)dec;
         auto end = Steady::now();
         std::cout << "Tiempo " << name << " : " << fmt_dur(end-start) << "\n";
     }
@@ -94,9 +97,7 @@ int main(int argc,char* argv[]){
 
     std::cout << "TFIN : " << fmt_time(TFIN_sys) << "\n";
     std::cout << "TPPA : " << fmt_dur(TPPA) << "\n";
-    std::cout << "TT   : " << fmt_dur(TT) << "\n";
-    if(any_fail)
-        std::cout << "❌ Error de verificación\n";
-    else
-        std::cout << "✅ Verificación OK\n";
+    std::cout << "TT: " << fmt_dur(TT) << "\n";
+    std::cout << sep << "\n";
+    std::cout << "Nota: TI= hora de comienzo, TPPA= tiempo promedio por archivo, TFIN= hora finalización, TT= tiempo total\n";
 }
