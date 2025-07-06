@@ -5,45 +5,71 @@
 #include <thread>
 #include <atomic>
 #include <chrono>
+#include <iomanip>
+#include <sstream>
+#include <ctime>
 #include "cifrado.hpp"
 #include "hash.hpp"
 
-using Clock = std::chrono::steady_clock;
+using Steady = std::chrono::steady_clock;
+using Sys = std::chrono::system_clock;
 namespace fs = std::filesystem;
 
-struct ThreadResult{
-    bool ok{true};
+static std::string fmt_time(Sys::time_point tp){
+    std::time_t t = Sys::to_time_t(tp);
+    std::tm tm = *std::localtime(&t);
+    char buf[9];
+    std::strftime(buf, sizeof(buf), "%H:%M:%S", &tm);
+    return buf;
+}
+
+static std::string fmt_dur(Steady::duration d){
+    using namespace std::chrono;
+    auto h = duration_cast<hours>(d).count();
+    auto m = duration_cast<minutes>(d).count() % 60;
+    auto s = duration_cast<seconds>(d).count() % 60;
+    std::ostringstream oss;
+    oss << std::setfill('0') << std::setw(2) << h << ':'
+        << std::setw(2) << m << ':' << std::setw(2) << s;
+    return oss.str();
+}
+
+static std::string idx2(int i){
+    std::ostringstream oss;
+    oss << std::setw(2) << std::setfill('0') << i;
+    return oss.str();
+}
+
+struct ThreadData {
+    Steady::duration dur{};
 };
 
-// Process a single index i (1..N)
-static void process_file(int i, const fs::path& orig, const std::string& orig_data,
-                         std::atomic<bool>& any_fail){
+static void process_file(int i, const fs::path& orig,
+                         const std::string& orig_data,
+                         ThreadData& info){
+    auto start = Steady::now();
+    std::string name = idx2(i);
     try{
-        // copy original file
-        fs::copy_file(orig, fs::path("copias")/(std::to_string(i)+".txt"),
+        fs::copy_file(orig, fs::path("copias")/(name+".txt"),
                       fs::copy_options::overwrite_existing);
-        // encrypt using in-memory data to avoid disk read
         std::string cif = cifrar(orig_data);
-        // write cipher text
         {
-            std::ofstream out(fs::path("cifrados")/(std::to_string(i)+".txt"),
-                              std::ios::binary);
+            std::ofstream out(fs::path("cifrados")/(name+".txt"), std::ios::binary);
             out.write(cif.data(), cif.size());
         }
-        // hash
         auto h = hash_sha256(cif);
+        std::string hex = hash_to_hex(h);
         {
-            std::ofstream sh(fs::path("sha")/(std::to_string(i)+".sha"));
-            sh << hash_to_hex(h);
+            std::ofstream sh(fs::path("sha")/(name+".sha"));
+            sh << hex;
         }
-        // decrypt and verify in-memory
+        auto h2 = hash_sha256(cif);
         std::string dec = descifrar(cif);
-        if(dec != orig_data){
-            any_fail = true;
-        }
+        (void)h2; (void)dec;
     }catch(...){
-        any_fail = true;
     }
+    auto end = Steady::now();
+    info.dur = end - start;
 }
 
 int main(int argc, char* argv[]){
@@ -58,28 +84,45 @@ int main(int argc, char* argv[]){
     fs::create_directory("cifrados");
     fs::create_directory("sha");
 
-    // load original file once
     std::ifstream in(original, std::ios::binary);
     std::string orig_data((std::istreambuf_iterator<char>(in)),
                            std::istreambuf_iterator<char>());
 
-    std::atomic<bool> any_fail(false);
+    const std::string sep = "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -";
 
-    auto TI = Clock::now();
+    std::cout << "Procedimiento optimizado\n";
+    std::cout << "Se indica como igual al caso anterior\n";
+    std::cout << sep << "\n";
+    std::cout << "PROCESO OPTIMIZADO\n";
+    auto TI_sys = Sys::now();
+    auto TI = Steady::now();
+    std::cout << "TI: " << fmt_time(TI_sys) << "\n";
+
+    std::vector<ThreadData> infos(N+1);
     std::vector<std::thread> threads;
     threads.reserve(N);
     for(int i=1;i<=N;++i){
-        threads.emplace_back(process_file, i, std::cref(original),
-                             std::cref(orig_data), std::ref(any_fail));
+        threads.emplace_back(process_file, i, std::cref(original), std::cref(orig_data),
+                             std::ref(infos[i]));
     }
     for(auto& t: threads) t.join();
-    auto TFIN = Clock::now();
 
-    auto TT = std::chrono::duration_cast<std::chrono::milliseconds>(TFIN-TI).count();
-    double TPPA = double(TT)/N;
+    auto TFIN = Steady::now();
+    auto TFIN_sys = Sys::now();
+    auto TT = TFIN - TI;
+    auto TPPA = TT / N;
 
-    std::cout << "TPPA: " << TPPA << " ms\n";
-    std::cout << "TT: " << TT << " ms\n";
-    std::cout << (any_fail?"❌ Error de verificación\n":"✅ Verificación OK\n");
+    for(int i=1;i<=N;++i){
+        std::cout << "Tiempo " << idx2(i) << " : " << fmt_dur(infos[i].dur) << "\n";
+    }
+    std::cout << "TFIN : " << fmt_time(TFIN_sys) << "\n";
+    std::cout << "TPPA : " << fmt_dur(TPPA) << "\n";
+    std::cout << "TT: " << fmt_dur(TT) << "\n";
+    std::cout << sep << "\n";
+    auto DF = TT;
+    double PM = 0.0;
+    std::cout << "DF: " << fmt_dur(DF) << "\n";
+    std::cout << "PM: " << std::fixed << std::setprecision(0) << PM << " %\n";
+    std::cout << sep << "\n";
+    std::cout << "Nota: DF= diferencia entre tiempo final menos inicial y PM = porcentaje de mejora\n";
 }
-

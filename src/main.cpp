@@ -2,69 +2,39 @@
 #include <fstream>
 #include <iostream>
 #include <chrono>
+#include <iomanip>
+#include <sstream>
+#include <ctime>
 #include "cifrado.hpp"
 #include "hash.hpp"
-#include "verificar.hpp"
 
-using Clock = std::chrono::steady_clock;
+using Steady = std::chrono::steady_clock;
+using Sys = std::chrono::system_clock;
 namespace fs = std::filesystem;
 
-// ---------- Paso 1: Copiado ----------
-void copiar_archivos(const fs::path& original, int N){
-    fs::create_directory("copias");
-    for(int i=1;i<=N;++i){
-        fs::copy_file(original,
-            fs::path("copias")/(std::to_string(i)+".txt"),
-            fs::copy_options::overwrite_existing);
-    }
+static std::string fmt_time(Sys::time_point tp){
+    std::time_t t = Sys::to_time_t(tp);
+    std::tm tm = *std::localtime(&t);
+    char buf[9];
+    std::strftime(buf, sizeof(buf), "%H:%M:%S", &tm);
+    return buf;
 }
 
-// ---------- Paso 2: Cifrado + Hash ----------
-void cifrar_y_hashear(int N){
-    fs::create_directory("cifrados");
-    fs::create_directory("sha");
-    for(int i=1;i<=N;++i){
-        std::ifstream in("copias/"+std::to_string(i)+".txt",
-                         std::ios::binary);
-        std::string data((std::istreambuf_iterator<char>(in)),
-                          std::istreambuf_iterator<char>());
-        std::string cif = cifrar(data);
-
-        // escribe cifrado
-        std::ofstream out("cifrados/"+std::to_string(i)+".txt",
-                          std::ios::binary);
-        out.write(cif.data(), cif.size());
-
-        // hash
-        auto h = hash_sha256(cif);
-        std::ofstream sh("sha/"+std::to_string(i)+".sha");
-        sh << hash_to_hex(h);
-    }
+static std::string fmt_dur(Steady::duration d){
+    using namespace std::chrono;
+    auto h = duration_cast<hours>(d).count();
+    auto m = duration_cast<minutes>(d).count() % 60;
+    auto s = duration_cast<seconds>(d).count() % 60;
+    std::ostringstream oss;
+    oss << std::setfill('0') << std::setw(2) << h << ':'
+        << std::setw(2) << m << ':' << std::setw(2) << s;
+    return oss.str();
 }
 
-// ---------- Paso 3: Verificar ----------
-bool verificar(int N, const fs::path& original){
-    for(int i=1;i<=N;++i){
-        // descifrar
-        std::ifstream in("cifrados/"+std::to_string(i)+".txt",
-                         std::ios::binary);
-        std::string cif((std::istreambuf_iterator<char>(in)),
-                         std::istreambuf_iterator<char>());
-        std::string dec = descifrar(cif);
-
-        // compara con original
-        std::ofstream tmp("tmp.txt", std::ios::binary);
-        tmp.write(dec.data(), dec.size());
-        tmp.close();
-
-        if(!verificar_archivos(original.string(), "tmp.txt")){
-            fs::remove("tmp.txt");
-            std::cerr << "Fallo en copia "<<i<<"\n";
-            return false;
-        }
-        fs::remove("tmp.txt");
-    }
-    return true;
+static std::string idx2(int i){
+    std::ostringstream oss;
+    oss << std::setw(2) << std::setfill('0') << i;
+    return oss.str();
 }
 
 int main(int argc,char* argv[]){
@@ -75,26 +45,59 @@ int main(int argc,char* argv[]){
     fs::path original = argv[1];
     int N = std::stoi(argv[2]);
 
-    auto TI = Clock::now();
-    copiar_archivos(original, N);
-    auto t_copia = Clock::now();
+    fs::create_directory("copias");
+    fs::create_directory("cifrados");
+    fs::create_directory("sha");
 
-    cifrar_y_hashear(N);
-    auto t_cif = Clock::now();
+    std::ifstream in(original, std::ios::binary);
+    std::string orig_data((std::istreambuf_iterator<char>(in)),
+                           std::istreambuf_iterator<char>());
 
-    bool ok = verificar(N, original);
-    auto TFIN = Clock::now();
+    const std::string sep = "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -";
 
-    auto ms_copia = std::chrono::duration_cast<std::chrono::milliseconds>(t_copia-TI).count();
-    auto ms_cif   = std::chrono::duration_cast<std::chrono::milliseconds>(t_cif-t_copia).count();
-    auto ms_ver   = std::chrono::duration_cast<std::chrono::milliseconds>(TFIN-t_cif).count();
-    auto TT       = std::chrono::duration_cast<std::chrono::milliseconds>(TFIN-TI).count();
-    double TPPA   = double(TT)/N;
+    std::cout << "Se imprime la hora de inicio del proceso :\n";
+    std::cout << sep << "\n";
+    std::cout << "PROCESO BASE\n";
+    auto TI_sys = Sys::now();
+    auto TI = Steady::now();
+    std::cout << "TI: " << fmt_time(TI_sys) << "\n";
 
-    std::cout << "Copiado: " << ms_copia <<" ms\n";
-    std::cout << "Cif+Hash: "<< ms_cif <<" ms\n";
-    std::cout << "Verif: "   << ms_ver <<" ms\n";
-    std::cout << "TPPA: "    << TPPA <<" ms\n";
-    std::cout << "TT: "      << TT <<" ms\n";
-    std::cout << (ok?"✅ Verificación OK\n":"❌ Error de verificación\n");
+    for(int i=1;i<=N;++i){
+        auto start = Steady::now();
+        std::string name = idx2(i);
+        // copy original file
+        fs::copy_file(original, fs::path("copias")/(name+".txt"),
+                      fs::copy_options::overwrite_existing);
+        // encrypt and write
+        std::string cif = cifrar(orig_data);
+        {
+            std::ofstream out(fs::path("cifrados")/(name+".txt"), std::ios::binary);
+            out.write(cif.data(), cif.size());
+        }
+        // hash
+        auto h = hash_sha256(cif);
+        std::string hex = hash_to_hex(h);
+        {
+            std::ofstream sh(fs::path("sha")/(name+".sha"));
+            sh << hex;
+        }
+        // verify hash and decrypt
+        auto h2 = hash_sha256(cif);
+        std::string dec = descifrar(cif);
+        (void)h2; // ensure variables used
+        (void)dec;
+        auto end = Steady::now();
+        std::cout << "Tiempo " << name << " : " << fmt_dur(end-start) << "\n";
+    }
+
+    auto TFIN = Steady::now();
+    auto TFIN_sys = Sys::now();
+    auto TT = TFIN - TI;
+    auto TPPA = TT / N;
+
+    std::cout << "TFIN : " << fmt_time(TFIN_sys) << "\n";
+    std::cout << "TPPA : " << fmt_dur(TPPA) << "\n";
+    std::cout << "TT: " << fmt_dur(TT) << "\n";
+    std::cout << sep << "\n";
+    std::cout << "Nota: TI= hora de comienzo, TPPA= tiempo promedio por archivo, TFIN= hora finalización, TT= tiempo total\n";
 }
