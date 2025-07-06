@@ -6,9 +6,17 @@ find_package(OpenSSL REQUIRED)
 
 add_executable(flujo
     src/main.cpp
-    src/cifrado.cpp                     
+    src/cifrado.cpp
+    src/hash.cpp
+    src/verificar.cpp
+)
+
+add_executable(flujo_opt
+    src/main_opt.cpp
+    src/cifrado.cpp
     src/hash.cpp
     src/verificar.cpp
 )
 
 target_link_libraries(flujo PRIVATE OpenSSL::SSL OpenSSL::Crypto)  # ③
+target_link_libraries(flujo_opt PRIVATE OpenSSL::SSL OpenSSL::Crypto)
