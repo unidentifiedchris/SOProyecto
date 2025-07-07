@@ -23,11 +23,15 @@ static char descifraChar(char c) {
 }
 std::string cifrar(const std::string& in){
     std::string out = in;
-    for(char& c: out) c = cifraChar(c);
+    for(std::string::iterator it = out.begin(); it != out.end(); ++it){
+        *it = cifraChar(*it);
+    }
     return out;
 }
 std::string descifrar(const std::string& in){
     std::string out = in;
-    for(char& c: out) c = descifraChar(c);
+    for(std::string::iterator it = out.begin(); it != out.end(); ++it){
+        *it = descifraChar(*it);
+    }
     return out;
 }

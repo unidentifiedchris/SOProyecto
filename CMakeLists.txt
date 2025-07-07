@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 project(SOProyecto LANGUAGES CXX)
-set(CMAKE_CXX_STANDARD 20)
-
-find_package(OpenSSL REQUIRED)          
+set(CMAKE_CXX_STANDARD 98)
 
 add_executable(flujo
     src/main.cpp
@@ -18,5 +16,3 @@ add_executable(flujo_opt
     src/verificar.cpp
 )
 
-target_link_libraries(flujo PRIVATE OpenSSL::SSL OpenSSL::Crypto)  # ③
-target_link_libraries(flujo_opt PRIVATE OpenSSL::SSL OpenSSL::Crypto)
