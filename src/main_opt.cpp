@@ -72,7 +72,10 @@ int main(int argc, char* argv[]){
         threads.emplace_back(process_file, i, std::cref(original),
                              std::cref(orig_data), std::ref(any_fail));
     }
-    for(auto& t: threads) t.join();
+    for(std::vector<std::thread>::iterator it = threads.begin();
+        it != threads.end(); ++it){
+        it->join();
+    }
     auto TFIN = Clock::now();
 
     auto TT = std::chrono::duration_cast<std::chrono::milliseconds>(TFIN-TI).count();
