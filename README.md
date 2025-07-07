@@ -10,7 +10,7 @@
 
 ```text
 SOProyecto/
-├── src/                 # C++20 source code  (flujo base)
+├── src/                 # C++98 source code  (flujo)
 │   ├── main.cpp         # entry point
 │   ├── cifrado.*        # cipher / decipher helpers
 │   ├── hash.*           # streaming SHA‑256 helpers
@@ -31,7 +31,7 @@ SOProyecto/
 | --------------------------------- | ----------------------------------------------------------------------- |
 | **Ubuntu / Codespaces**           | `build-essential cmake ninja-build libssl-dev`                          |
 | **Windows (MSVC)**                | Visual Studio 2022 (Build Tools incl. CMake & Ninja) + OpenSSL 3 64‑bit |
-| **Windows (Dev‑C++ / MinGW‑w64)** | Dev‑C++ 6.3+, enable `-std=c++20` and link `-lssl -lcrypto`             |
+| **Windows (Dev‑C++ / MinGW‑w64)** | Dev‑C++ 6.3+ (C++98 mode is enough; no external libs required) |
 
 ---
 
@@ -42,8 +42,8 @@ SOProyecto/
 ```bash
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
-./build/flujo original.txt 10   # N = 10 copies (default test size)
-./build/flujo_opt original.txt 10   # optimised, parallel version
+./build/flujo original.txt 10                # modo secuencial
+./build/flujo opt original.txt 10            # modo optimizado
 ```
 
 ### 3.2 Windows – Visual Studio 2022
@@ -52,20 +52,20 @@ cmake --build build --parallel
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 build\Release\flujo.exe original.txt 10
-build\Release\flujo_opt.exe original.txt 10
+build\Release\flujo.exe opt original.txt 10
 ```
 
 ### 3.3 Windows – Dev‑C++ quick guide
 
 1. File ▸ New ▸ **Console Project (C++)**  → place inside repo root.
 2. Add every `.cpp` & `.hpp` from `src/` to the project.
-3. **Project Options ▸ Parameters ▸ C++ Compiler**  → `-std=c++20 -O2`.
-4. Linker parameters → `-lssl -lcrypto` and set include/lib directories to your OpenSSL install.
+3. **Project Options ▸ Parameters ▸ C++ Compiler**  → keep the default (C++98).
+4. No additional linker parameters needed.
 5. Press **F11** (Compile) & run:
 
 ```ps1
 flujo.exe original.txt 10
-flujo_opt.exe original.txt 10
+flujo.exe opt original.txt 10
 ```
 
 ---
@@ -83,7 +83,7 @@ TT        : 537 ms
 ✅ Verificación OK
 ```
 
-Parallel run (`flujo_opt`, N = 10):
+Parallel run (`flujo opt`, N = 10):
 ```
 TPPA      : 1.9 ms
 TT        : 19 ms
@@ -119,7 +119,7 @@ GitHub Actions workflow (`ci.yml`):
 ## 7. Deliverables checklist
 
 1. **ZIP**: source, CMakeLists.txt or `.dev`, `original.txt`, docs (no build artefacts).
-2. **Executables**: `flujo.exe` (base) ± `flujo_opt.exe` (optimised).
+2. **Executable**: `flujo.exe` (use `opt` argument for optimised mode).
 3. **Informe.doc/.pdf**: methodology, tables, DF / PM, screenshots.
 4. **README.md** (this file).
 
