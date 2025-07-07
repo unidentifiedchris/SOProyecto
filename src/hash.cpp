@@ -13,7 +13,9 @@ std::array<unsigned char,32> hash_sha256(const std::string& data){
 }
 std::string hash_to_hex(const std::array<unsigned char,32>& h){
     std::ostringstream oss;
-    for(unsigned char b: h)
+    for(std::size_t i = 0; i < h.size(); ++i){
+        unsigned char b = h[i];
         oss << std::hex << std::setw(2) << std::setfill('0') << (int)b;
+    }
     return oss.str();
 }
