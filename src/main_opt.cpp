@@ -1,39 +1,33 @@
-#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <vector>
-#include <thread>
-#include <atomic>
-#include <chrono>
+#include <ctime>
+#include <sstream>
+#include "fs_compat.hpp"
 #include "cifrado.hpp"
 #include "hash.hpp"
 
-using Clock = std::chrono::steady_clock;
-namespace fs = std::filesystem;
 
-struct ThreadResult{
-    bool ok{true};
-};
 
 // Process a single index i (1..N)
-static void process_file(int i, const fs::path& orig, const std::string& orig_data,
-                         std::atomic<bool>& any_fail){
+static void process_file(int i, const std::string& orig, const std::string& orig_data,
+                         bool& any_fail){
     try{
         // copy original file
-        fs::copy_file(orig, fs::path("copias")/(std::to_string(i)+".txt"),
-                      fs::copy_options::overwrite_existing);
+        fs_copy_file(orig, std::string("copias/")+int_to_string(i)+".txt");
         // encrypt using in-memory data to avoid disk read
         std::string cif = cifrar(orig_data);
         // write cipher text
         {
-            std::ofstream out(fs::path("cifrados")/(std::to_string(i)+".txt"),
-                              std::ios::binary);
+            std::string out_name = std::string("cifrados/")+int_to_string(i)+".txt";
+            std::ofstream out(out_name.c_str(), std::ios::binary);
             out.write(cif.data(), cif.size());
         }
         // hash
-        auto h = hash_sha256(cif);
+        Hash32 h = hash_sha256(cif);
         {
-            std::ofstream sh(fs::path("sha")/(std::to_string(i)+".sha"));
+            std::string sh_name = std::string("sha/")+int_to_string(i)+".sha";
+            std::ofstream sh(sh_name.c_str());
             sh << hash_to_hex(h);
         }
         // decrypt and verify in-memory
@@ -51,34 +45,27 @@ int main(int argc, char* argv[]){
         std::cerr<<"Uso: flujo_opt <original> <N>\n";
         return 1;
     }
-    fs::path original = argv[1];
-    int N = std::stoi(argv[2]);
+    std::string original = argv[1];
+    int N = string_to_int(argv[2]);
 
-    fs::create_directory("copias");
-    fs::create_directory("cifrados");
-    fs::create_directory("sha");
+    fs_create_dir("copias");
+    fs_create_dir("cifrados");
+    fs_create_dir("sha");
 
     // load original file once
-    std::ifstream in(original, std::ios::binary);
+    std::ifstream in(original.c_str(), std::ios::binary);
     std::string orig_data((std::istreambuf_iterator<char>(in)),
                            std::istreambuf_iterator<char>());
 
-    std::atomic<bool> any_fail(false);
+    bool any_fail = false;
 
-    auto TI = Clock::now();
-    std::vector<std::thread> threads;
-    threads.reserve(N);
+    clock_t TI = clock();
     for(int i=1;i<=N;++i){
-        threads.emplace_back(process_file, i, std::cref(original),
-                             std::cref(orig_data), std::ref(any_fail));
+        process_file(i, original, orig_data, any_fail);
     }
-    for(std::vector<std::thread>::iterator it = threads.begin();
-        it != threads.end(); ++it){
-        it->join();
-    }
-    auto TFIN = Clock::now();
+    clock_t TFIN = clock();
 
-    auto TT = std::chrono::duration_cast<std::chrono::milliseconds>(TFIN-TI).count();
+    long TT = (long)((TFIN - TI) * 1000 / CLOCKS_PER_SEC);
     double TPPA = double(TT)/N;
 
     std::cout << "TPPA: " << TPPA << " ms\n";
