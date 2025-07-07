@@ -63,6 +63,7 @@ int main(int argc, char* argv[]){
     for(int i=1;i<=N;++i){
         process_file(i, original, orig_data, any_fail);
     }
+
     clock_t TFIN = clock();
 
     long TT = (long)((TFIN - TI) * 1000 / CLOCKS_PER_SEC);
