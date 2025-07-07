@@ -31,7 +31,7 @@ SOProyecto/
 | --------------------------------- | ----------------------------------------------------------------------- |
 | **Ubuntu / Codespaces**           | `build-essential cmake ninja-build libssl-dev`                          |
 | **Windows (MSVC)**                | Visual Studio 2022 (Build Tools incl. CMake & Ninja) + OpenSSL 3 64‑bit |
-| **Windows (Dev‑C++ / MinGW‑w64)** | Dev‑C++ 6.3+, enable `-std=c++20` and link `-lssl -lcrypto`             |
+| **Windows (Dev‑C++ / MinGW‑w64)** | Dev‑C++ 6.3+ (C++98 mode is enough; no external libs required) |
 
 ---
 
@@ -59,8 +59,8 @@ build\Release\flujo_opt.exe original.txt 10
 
 1. File ▸ New ▸ **Console Project (C++)**  → place inside repo root.
 2. Add every `.cpp` & `.hpp` from `src/` to the project.
-3. **Project Options ▸ Parameters ▸ C++ Compiler**  → `-std=c++20 -O2`.
-4. Linker parameters → `-lssl -lcrypto` and set include/lib directories to your OpenSSL install.
+3. **Project Options ▸ Parameters ▸ C++ Compiler**  → keep the default (C++98).
+4. No additional linker parameters needed.
 5. Press **F11** (Compile) & run:
 
 ```ps1
